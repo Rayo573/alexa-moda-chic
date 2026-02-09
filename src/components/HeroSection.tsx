@@ -8,7 +8,7 @@ const HeroSection = () => {
       <div className="absolute inset-0">
         <img
           src={heroImage}
-          alt="Mujer con estilo caminando por la calle con confianza"
+          alt="Colección de vestidos elegantes y coloridos en Alexa Moda Boutique"
           className="w-full h-full object-cover"
           loading="eager"
         />
