@@ -4,9 +4,9 @@ import { Menu, X } from "lucide-react";
 
 const links = [
   { label: "Inicio", href: "#" },
-  { label: "Galería", href: "#galeria" },
-  { label: "Servicios", href: "#servicios" },
-  { label: "Contacto", href: "#contacto" },
+  { label: "Ropa Colombiana", href: "/moda-colombiana.html" },
+  { label: "Vestidos", href: "/vestidos-fiesta.html" },
+  { label: "Contacto", href: "#social-connect" },
 ];
 
 const Navbar = () => {

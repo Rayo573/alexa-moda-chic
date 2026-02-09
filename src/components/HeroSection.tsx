@@ -9,10 +9,10 @@ const HeroSection = () => {
         <img
           src={heroImage}
           alt="Colección de vestidos elegantes y coloridos en Alexa Moda Boutique"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover brightness-110 contrast-125 saturate-125"
           loading="eager"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-foreground/40 via-foreground/20 to-transparent" />
       </div>
 
       <div className="relative z-10 container mx-auto px-6 py-20">
@@ -26,9 +26,11 @@ const HeroSection = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-secondary font-body text-sm tracking-[0.25em] uppercase mb-4"
+            className="text-secondary font-body font-bold text-sm md:text-sm tracking-[0.12em] md:tracking-[0.3em] uppercase mb-4 drop-shadow-lg"
+            style={{ textShadow: "1px 1px 5px rgba(0, 0, 0, 0.8)" }}
           >
-            Alexa Moda Boutique · Alcobendas
+            <span className="block md:inline">Alexa Moda Boutique ·</span>
+            <span className="block md:inline mt-1 md:mt-0">Estilo y Exclusividad</span>
           </motion.p>
 
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground leading-[1.1] mb-6">
@@ -38,28 +40,26 @@ const HeroSection = () => {
           </h1>
 
           <p className="text-primary-foreground/80 font-body text-lg md:text-xl mb-8 max-w-md leading-relaxed">
-            Encuentra el vestido que te haga sentir increíble. ¡Estamos en el corazón de Alcobendas!
+            Encuentra el vestido que te haga sentir increíble. ¡Hacemos envíos a toda España!
           </p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4"
+            className="flex flex-col sm:flex-row gap-4 w-full botones-container"
           >
             <a
-              href="#galeria"
-              className="inline-flex items-center justify-center px-8 py-4 bg-secondary text-secondary-foreground font-body font-semibold text-base rounded-full hover:scale-105 transition-transform duration-300 shadow-lg"
+              href="/vestidos-fiesta.html"
+              className="btn-categoria inline-flex items-center justify-center font-bold text-base rounded-full hover:scale-105 transition-transform duration-300 shadow-md flex-1 text-center"
             >
-              ¡Quiero verlo todo! ✨
+              Vestidos de Fiesta
             </a>
             <a
-              href="https://wa.me/34664123153"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-8 py-4 border-2 border-primary-foreground/30 text-primary-foreground font-body font-medium text-base rounded-full hover:bg-primary-foreground/10 transition-colors duration-300"
+              href="/moda-colombiana.html"
+              className="btn-categoria inline-flex items-center justify-center font-bold text-base rounded-full hover:scale-105 transition-transform duration-300 shadow-md flex-1 text-center"
             >
-              Escríbenos por WhatsApp
+              Moda Colombiana
             </a>
           </motion.div>
         </motion.div>
