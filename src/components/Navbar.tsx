@@ -28,10 +28,8 @@ const Navbar = () => {
       }`}
     >
       <div className="container mx-auto px-6 flex items-center justify-between">
-        <a href="#" className="font-display font-bold text-xl md:text-2xl">
-          <span className={scrolled ? "text-foreground" : "text-primary-foreground"}>
+        <a href="#" className="font-display font-bold text-xl md:text-2xl text-foreground">
             Alexa Moda
-          </span>
         </a>
 
         {/* Desktop */}
@@ -40,9 +38,7 @@ const Navbar = () => {
             <a
               key={l.label}
               href={l.href}
-              className={`font-body text-sm font-medium transition-colors hover:opacity-70 ${
-                scrolled ? "text-foreground" : "text-primary-foreground"
-              }`}
+              className="font-body text-sm font-medium text-foreground transition-colors hover:opacity-70"
             >
               {l.label}
             </a>
@@ -60,7 +56,7 @@ const Navbar = () => {
         {/* Mobile toggle */}
         <button
           onClick={() => setOpen(!open)}
-          className={`md:hidden p-2 ${scrolled ? "text-foreground" : "text-primary-foreground"}`}
+          className="md:hidden p-2 text-foreground"
           aria-label="Menú"
         >
           {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
