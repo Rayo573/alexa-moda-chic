@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 
 const links = [
   { label: "Inicio", href: "#" },
+  { label: "Hector", href: "#" },
   { label: "Ropa Colombiana", href: "/moda-colombiana.html" },
   { label: "Vestidos", href: "/vestidos-fiesta.html" },
   { label: "Contacto", href: "#social-connect" },
