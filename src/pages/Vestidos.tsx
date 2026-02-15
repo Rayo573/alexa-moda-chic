@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from '@/supabase';
@@ -160,6 +160,7 @@ const ProductCard = ({ vestido, navigate }: { vestido: any; navigate: any }) => 
 
 const Vestidos = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [vestidos, setVestidos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [precioOpen, setPrecioOpen] = useState(false);
@@ -231,8 +232,19 @@ const Vestidos = () => {
 
   // Cargar productos al montar el componente
   useEffect(() => {
-    construirYEjecutarQuery(filters);
-  }, []);
+    // Verificar si hay parámetro de filtro en la URL
+    const searchParams = new URLSearchParams(location.search);
+    const filtroURL = searchParams.get('filtro');
+    
+    if (filtroURL === 'rebajas') {
+      // Pre-seleccionar el filtro de rebajas
+      const filtrosConRebajas = { ...filters, rebajas: true };
+      setFilters(filtrosConRebajas);
+      construirYEjecutarQuery(filtrosConRebajas);
+    } else {
+      construirYEjecutarQuery(filters);
+    }
+  }, [location.search]);
 
   // Manejar cambios en filtros
   const handleFilterChange = (filterName: string, value: any) => {
@@ -247,8 +259,24 @@ const Vestidos = () => {
     construirYEjecutarQuery(nuevosFiltros);
   };
 
+  const filterControlStyle: React.CSSProperties = {
+    height: "40px",
+    minHeight: "40px",
+    padding: "8px 12px",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    fontSize: "12px",
+    fontFamily: "'Playfair Display', serif",
+    cursor: "pointer",
+    backgroundColor: "white",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box"
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ backgroundColor: "#fcfaf7" }}>
       <Navbar alwaysOpaque={true} />
       <main className="pt-28">
         <section className="w-full">
@@ -263,70 +291,44 @@ const Vestidos = () => {
             alignItems: "center",
             justifyContent: "center",
             borderBottom: "1px solid #e0e0e0",
-            backgroundColor: "#fafafa"
+            backgroundColor: "#fcfaf7"
           }}>
-            {/* Categoría */}
-            <select
-              value={filters.categoria}
-              onChange={(e) => handleFilterChange('categoria', e.target.value)}
-              style={{
-                padding: "8px 12px",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                fontSize: "12px",
-                fontFamily: "'Playfair Display', serif",
-                cursor: "pointer",
-                backgroundColor: "white"
-              }}
-            >
-              <option value="">CATEGORÍAS</option>
-              <option value="15 años">15 Años</option>
-              <option value="Graduación">Graduación</option>
-              <option value="Boda">Boda</option>
-            </select>
-
-            {/* Color */}
-            <select
-              value={filters.color}
-              onChange={(e) => handleFilterChange('color', e.target.value)}
-              style={{
-                padding: "8px 12px",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                fontSize: "12px",
-                fontFamily: "'Playfair Display', serif",
-                cursor: "pointer",
-                backgroundColor: "white"
-              }}
-            >
-              <option value="">COLOR</option>
-              <option value="Rojo">Rojo</option>
-              <option value="Negro">Negro</option>
-              <option value="Blanco">Blanco</option>
-              <option value="Champagne">Champagne</option>
-              <option value="Beige">Beige</option>
-              <option value="Azul">Azul</option>
-              <option value="Rosa">Rosa</option>
-            </select>
-
             {/* Precio - Slider Desplegable */}
             <div style={{ position: "relative" }}>
               <button
                 onClick={() => setPrecioOpen(!precioOpen)}
                 style={{
-                  padding: "8px 12px",
+                  ...filterControlStyle,
+                  justifyContent: "center",
+                  position: "relative",
+                  paddingRight: "40px",
                   border: precioOpen ? "1px solid #c5a059" : "1px solid #ddd",
-                  borderRadius: "4px",
-                  fontSize: "12px",
-                  fontFamily: "'Playfair Display', serif",
-                  cursor: "pointer",
                   backgroundColor: precioOpen ? "#fcfaf7" : "white",
                   color: "#1a1a1a",
-                  fontWeight: precioOpen ? "bold" : "normal",
                   transition: "all 0.3s ease"
                 }}
               >
-                PRECIO {precioOpen ? "▼" : "▶"}
+                <span style={{ fontWeight: precioOpen ? "bold" : "normal" }}>PRECIO</span>
+                <svg
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    transition: "transform 0.18s ease",
+                    transform: precioOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transformOrigin: "center",
+                    transformBox: "fill-box",
+                    marginTop: "-7px",
+                    color: "#1a1a1a"
+                  }}
+                  aria-hidden="true"
+                >
+                  <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
               </button>
 
               {/* Slider desplegado */}
@@ -477,19 +479,39 @@ const Vestidos = () => {
               )}
             </div>
 
+            {/* Categoría */}
+            <select
+              value={filters.categoria}
+              onChange={(e) => handleFilterChange('categoria', e.target.value)}
+              style={filterControlStyle}
+            >
+              <option value="">CATEGORÍAS</option>
+              <option value="15 años">15 Años</option>
+              <option value="Graduación">Graduación</option>
+              <option value="Boda">Boda</option>
+            </select>
+
+            {/* Color */}
+            <select
+              value={filters.color}
+              onChange={(e) => handleFilterChange('color', e.target.value)}
+              style={filterControlStyle}
+            >
+              <option value="">COLOR</option>
+              <option value="Rojo">Rojo</option>
+              <option value="Negro">Negro</option>
+              <option value="Blanco">Blanco</option>
+              <option value="Champagne">Champagne</option>
+              <option value="Beige">Beige</option>
+              <option value="Azul">Azul</option>
+              <option value="Rosa">Rosa</option>
+            </select>
+
             {/* Talla */}
             <select
               value={filters.talla}
               onChange={(e) => handleFilterChange('talla', e.target.value)}
-              style={{
-                padding: "8px 12px",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                fontSize: "12px",
-                fontFamily: "'Playfair Display', serif",
-                cursor: "pointer",
-                backgroundColor: "white"
-              }}
+              style={filterControlStyle}
             >
               <option value="">TALLA</option>
               <option value="XS">XS</option>
@@ -504,12 +526,8 @@ const Vestidos = () => {
             <button
               onClick={handleToggleRebajas}
               style={{
-                padding: "8px 12px",
+                ...filterControlStyle,
                 border: filters.rebajas ? "1px solid #c5a059" : "1px solid #ddd",
-                borderRadius: "4px",
-                fontSize: "12px",
-                fontFamily: "'Playfair Display', serif",
-                cursor: "pointer",
                 backgroundColor: filters.rebajas ? "#c5a059" : "white",
                 color: filters.rebajas ? "white" : "#1a1a1a",
                 fontWeight: filters.rebajas ? "bold" : "normal",
@@ -523,15 +541,7 @@ const Vestidos = () => {
             <select
               value={filters.ordenar}
               onChange={(e) => handleFilterChange('ordenar', e.target.value)}
-              style={{
-                padding: "8px 12px",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                fontSize: "12px",
-                fontFamily: "'Playfair Display', serif",
-                cursor: "pointer",
-                backgroundColor: "white"
-              }}
+              style={filterControlStyle}
             >
               <option value="created_at">NOVEDADES</option>
               <option value="precio_asc">MENOR PRECIO</option>
@@ -542,11 +552,20 @@ const Vestidos = () => {
           {/* Grid de productos */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
             gap: "40px",
             padding: "20px",
             backgroundColor: "#fcfaf7"
-          }}>
+          } as React.CSSProperties}
+          className="products-grid"
+          >
+            <style>{`
+              @media (min-width: 768px) {
+                .products-grid {
+                  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+                }
+              }
+            `}</style>
             {loading ? (
               <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px" }}>
                 <p style={{ color: "#999" }}>Filtrando productos...</p>

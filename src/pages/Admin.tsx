@@ -16,6 +16,7 @@ const Admin = () => {
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [descripcion, setDescripcion] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -105,7 +106,8 @@ const Admin = () => {
       tallas: formData.tallas.split(',').map(t => t.trim()),
       colores: formData.colores.split(',').map(c => c.trim()),
       stock_unidades: parseInt(formData.stock_unidades),
-      foto_url: publicUrl // El enlace que acabamos de crear
+      foto_url: publicUrl, // El enlace que acabamos de crear
+      descripcion: descripcion
     };
     
     // PASO 4: Guardamos el vestido con la URL de la foto
@@ -255,6 +257,16 @@ const Admin = () => {
                     ✓ Archivo seleccionado: {selectedFile.name}
                   </p>
                 )}
+              </div>
+
+              <div className="flex flex-col gap-2 mt-4">
+                <label className="font-bold text-sm">DESCRIPCIÓN DEL VESTIDO:</label>
+                <textarea
+                  placeholder="Escribe aquí los detalles del vestido..."
+                  onChange={(e) => setDescripcion(e.target.value)}
+                  className="border p-2 rounded-md w-full"
+                  rows={4}
+                />
               </div>
 
               <button

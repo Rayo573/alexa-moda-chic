@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -28,8 +28,19 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [tallaSeleccionada, setTallaSeleccionada] = useState("");
   const [colorSeleccionado, setColorSeleccionado] = useState("");
-  const [descripcionCorta, setDescripcionCorta] = useState(false);
-  const [descripcionLarga, setDescripcionLarga] = useState(false);
+  const [showQuickModal, setShowQuickModal] = useState(false);
+  const [cantidadRapida, setCantidadRapida] = useState(1);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Función para barajar array (aleatorizar)
+  const shuffleArray = (array: any[]) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
 
   useEffect(() => {
     const cargarDetalle = async () => {
@@ -48,15 +59,19 @@ const ProductDetail = () => {
           if (data.tallas && data.tallas.length > 0) setTallaSeleccionada(data.tallas[0]);
           if (data.colores && data.colores.length > 0) setColorSeleccionado(data.colores[0]);
 
-          // Cargar productos relacionados de la misma categoría
+          // Cargar productos relacionados de la misma categoría (máximo 20)
           const { data: relacionados } = await supabase
             .from('vestidos')
             .select('*')
             .eq('categoria', data.categoria)
             .neq('id', id)
-            .limit(4);
+            .limit(20);
           
-          if (relacionados) setProductosRelacionados(relacionados);
+          // Barajar los productos para orden aleatorio
+          if (relacionados) {
+            const shuffled = shuffleArray(relacionados);
+            setProductosRelacionados(shuffled);
+          }
         }
       } catch (err) {
         console.error("Error:", err);
@@ -119,7 +134,7 @@ const ProductDetail = () => {
     window.open(url, '_blank');
   };
 
-  // Función para compra rápida
+  // Función para abrir modal de compra rápida
   const compraRapida = () => {
     if (!tallaSeleccionada) {
       alert("Por favor selecciona una talla");
@@ -129,8 +144,26 @@ const ProductDetail = () => {
       alert("Por favor selecciona un color");
       return;
     }
-    agregarAlCarrito();
-    setTimeout(() => navigate('/carrito'), 300);
+    setCantidadRapida(1);
+    setShowQuickModal(true);
+  };
+
+  // Función para confirmar compra rápida y ir al checkout
+  const handleCompraRapidaConfirm = () => {
+    const pedidoDirecto = {
+      id: vestido.id,
+      nombre: vestido.nombre,
+      talla: tallaSeleccionada,
+      color: colorSeleccionado,
+      precio_final: vestido.precio_final,
+      cantidad: cantidadRapida,
+      foto_url: vestido.foto_url,
+      categoria: vestido.categoria
+    };
+
+    localStorage.setItem('compra_directa', JSON.stringify(pedidoDirecto));
+    setShowQuickModal(false);
+    navigate('/checkout');
   };
 
   if (loading) {
@@ -160,6 +193,142 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#fafaf8" }}>
       <Navbar alwaysOpaque={true} />
+      
+      {/* MODAL DE COMPRA RÁPIDA */}
+      {showQuickModal && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 50,
+          padding: "16px"
+        }}>
+          <div style={{
+            backgroundColor: "white",
+            padding: "32px",
+            maxWidth: "420px",
+            width: "100%",
+            borderRadius: "0",
+            boxShadow: "0 20px 25px rgba(0, 0, 0, 0.15)",
+            textAlign: "center"
+          }}>
+            <h2 style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: "28px",
+              fontWeight: "700",
+              marginBottom: "8px",
+              letterSpacing: "2px",
+              color: "#1a1a1a"
+            }}>Casi tuyo...</h2>
+            <p style={{
+              color: "#666",
+              fontSize: "14px",
+              marginBottom: "24px",
+              fontStyle: "italic"
+            }}>¿Cuántas unidades deseas?</p>
+            
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "24px",
+              marginBottom: "32px"
+            }}>
+              <button 
+                onClick={() => setCantidadRapida(Math.max(1, cantidadRapida - 1))}
+                style={{
+                  fontSize: "24px",
+                  border: "1px solid #ddd",
+                  width: "40px",
+                  height: "40px",
+                  backgroundColor: "white",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "0",
+                  transition: "all 0.2s ease"
+                }}
+                onMouseOver={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9f9f9"}
+                onMouseOut={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = "white"}
+              >
+                −
+              </button>
+              <span style={{
+                fontSize: "24px",
+                fontWeight: "700",
+                minWidth: "30px",
+                color: "#1a1a1a"
+              }}>{cantidadRapida}</span>
+              <button 
+                onClick={() => setCantidadRapida(cantidadRapida + 1)}
+                style={{
+                  fontSize: "24px",
+                  border: "1px solid #ddd",
+                  width: "40px",
+                  height: "40px",
+                  backgroundColor: "white",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "0",
+                  transition: "all 0.2s ease"
+                }}
+                onMouseOver={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f9f9f9"}
+                onMouseOut={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = "white"}
+              >
+                +
+              </button>
+            </div>
+
+            <button 
+              onClick={handleCompraRapidaConfirm}
+              style={{
+                width: "100%",
+                backgroundColor: "#1a1a1a",
+                color: "white",
+                padding: "16px",
+                fontWeight: "700",
+                fontSize: "13px",
+                border: "none",
+                borderRadius: "0",
+                cursor: "pointer",
+                fontFamily: "'Playfair Display', serif",
+                letterSpacing: "1.5px",
+                marginBottom: "12px",
+                transition: "all 0.3s ease"
+              }}
+              onMouseOver={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#333"}
+              onMouseOut={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#1a1a1a"}
+            >
+              CONFIRMAR Y PAGAR — €{(vestido.precio_final * cantidadRapida).toFixed(2)}
+            </button>
+            
+            <button 
+              onClick={() => setShowQuickModal(false)}
+              style={{
+                fontSize: "11px",
+                background: "none",
+                border: "none",
+                color: "#999",
+                cursor: "pointer",
+                textDecoration: "underline",
+                fontFamily: "system-ui",
+                letterSpacing: "0.5px",
+                width: "100%",
+                padding: "8px"
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
       <main className="pt-20 pb-16">
         {/* Breadcrumb */}
         <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 20px 20px 20px" }}>
@@ -180,17 +349,49 @@ const ProductDetail = () => {
         </div>
 
         {/* Layout de dos columnas */}
-        <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 20px", display: "grid", gridTemplateColumns: "1fr 420px", gap: "60px" }}>
+        <div className="product-layout" style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 20px", display: "grid", gridTemplateColumns: "1fr 420px", gap: "60px" }}>
+          <style>{`
+            /* Responsive tweaks for product detail mobile: keep PC look but stacked */
+            @media (max-width: 767px) {
+              .product-layout {
+                grid-template-columns: 1fr !important;
+                gap: 40px !important;
+                padding: 0 12px !important;
+              }
+              /* Keep panel styling but place it below the gallery/info */
+              .product-panel {
+                position: static !important;
+                top: auto !important;
+                padding: 22px !important;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.08) !important;
+                border-radius: 6px !important;
+              }
+              /* Gallery stays similar aspect but a bit taller on mobile */
+              .product-gallery {
+                aspect-ratio: 3 / 5 !important;
+                margin-bottom: 20px !important;
+              }
+              .product-layout img {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important;
+              }
+              .talla-grid {
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 8px !important;
+              }
+            }
+          `}</style>
           
           {/* COLUMNA IZQUIERDA: Galería */}
           <div>
-            <div style={{
-              position: "relative",
-              overflow: "hidden",
-              backgroundColor: "#f5f5f5",
-              aspectRatio: "3 / 5",
-              marginBottom: "20px"
-            }}>
+            <div className="product-gallery" style={{
+                position: "relative",
+                overflow: "hidden",
+                backgroundColor: "#f5f5f5",
+                aspectRatio: "3 / 5",
+                marginBottom: "20px"
+              }}>
               <img
                 src={vestido.foto_url}
                 alt={vestido.nombre}
@@ -218,90 +419,31 @@ const ProductDetail = () => {
               )}
             </div>
 
-            {/* Información adicional expandible */}
-            <div style={{ marginTop: "40px" }}>
-              {/* Descripción Corta */}
-              <div style={{ borderBottom: "1px solid #e0e0e0", paddingBottom: "20px", marginBottom: "20px" }}>
-                <button
-                  onClick={() => setDescripcionCorta(!descripcionCorta)}
-                  style={{
-                    width: "100%",
-                    textAlign: "left",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: 0,
-                    fontFamily: "'Playfair Display', serif",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    letterSpacing: "1px"
-                  }}
-                >
-                  DESCRIPCIÓN CORTA
-                  <span style={{ fontSize: "18px", fontWeight: "300" }}>
-                    {descripcionCorta ? '−' : '+'}
-                  </span>
-                </button>
-                {descripcionCorta && (
-                  <p style={{
-                    marginTop: "15px",
-                    fontSize: "13px",
-                    color: "#666",
-                    lineHeight: "1.6"
-                  }}>
-                    Vestido elegante de {vestido.categoria} disponible en {vestido.colores?.length} colores. 
-                    Confeccionado con telas premium. Disponible en tallas {vestido.tallas?.join(', ')}.
-                  </p>
-                )}
-              </div>
-
-              {/* Descripción Larga */}
-              <div style={{ borderBottom: "1px solid #e0e0e0", paddingBottom: "20px", marginBottom: "20px" }}>
-                <button
-                  onClick={() => setDescripcionLarga(!descripcionLarga)}
-                  style={{
-                    width: "100%",
-                    textAlign: "left",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: 0,
-                    fontFamily: "'Playfair Display', serif",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    letterSpacing: "1px"
-                  }}
-                >
-                  DESCRIPCIÓN DETALLADA
-                  <span style={{ fontSize: "18px", fontWeight: "300" }}>
-                    {descripcionLarga ? '−' : '+'}
-                  </span>
-                </button>
-                {descripcionLarga && (
-                  <p style={{
-                    marginTop: "15px",
-                    fontSize: "13px",
-                    color: "#666",
-                    lineHeight: "1.8"
-                  }}>
-                    Este exquisito vestido de {vestido.categoria} es una pieza que combina elegancia y sofisticación. 
-                    Diseñado para resaltar tu belleza natural, cuenta con detalles cuidadosamente seleccionados y 
-                    acabados de primera calidad. Perfecto para momentos especiales donde deseas lucir impecable. 
-                    Recomendamos revisar nuestra guía de tallas para asegurar el mejor ajuste.
-                  </p>
-                )}
-              </div>
+            {/* Descripción */}
+            <div style={{ marginTop: "40px", borderBottom: "1px solid #e0e0e0", paddingBottom: "20px" }}>
+              <h3 style={{
+                fontSize: "13px",
+                fontFamily: "'Playfair Display', serif",
+                fontWeight: "700",
+                letterSpacing: "1px",
+                marginBottom: "15px",
+                color: "#1a1a1a"
+              }}>
+                DESCRIPCIÓN
+              </h3>
+              <p style={{
+                fontSize: "13px",
+                color: "#666",
+                lineHeight: "1.8",
+                margin: 0
+              }}>
+                {vestido.descripcion || "Sin descripción disponible."}
+              </p>
             </div>
           </div>
 
           {/* COLUMNA DERECHA: Panel Sticky */}
-          <div style={{
+          <div className="product-panel" style={{
             position: "sticky",
             top: "100px",
             height: "fit-content",
@@ -377,7 +519,7 @@ const ProductDetail = () => {
               }}>
                 TALLA
               </label>
-              <div style={{
+              <div className="talla-grid" style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(3, 1fr)",
                 gap: "8px"
@@ -588,7 +730,7 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* SECCIÓN DE PRODUCTOS EN LA MISMA CATEGORÍA */}
+        {/* SECCIÓN DE PRODUCTOS EN LA MISMA CATEGORÍA - CARRUSEL */}
         {productosRelacionados.length > 0 && (
           <div style={{ maxWidth: "1400px", margin: "80px auto 0", padding: "0 20px" }}>
             <h2 style={{
@@ -601,88 +743,203 @@ const ProductDetail = () => {
             }}>
               VESTIDOS EN LA CATEGORÍA "{vestido.categoria.toUpperCase()}"
             </h2>
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: "20px"
-            }}>
-              {productosRelacionados.map((prod) => (
-                <div
-                  key={prod.id}
-                  onClick={() => navigate(`/producto/${prod.id}`)}
-                  style={{
-                    cursor: "pointer",
-                    transition: "transform 0.3s ease"
-                  }}
-                  onMouseOver={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.transform = "translateY(-5px)";
-                  }}
-                  onMouseOut={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-                  }}
-                >
-                  <div style={{
-                    position: "relative",
-                    aspectRatio: "3 / 5",
-                    backgroundColor: "#f5f5f5",
-                    overflow: "hidden",
-                    marginBottom: "12px"
-                  }}>
-                    <img
-                      src={prod.foto_url}
-                      alt={prod.nombre}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover"
-                      }}
-                    />
-                    {prod.es_rebaja && (
-                      <div style={{
-                        position: "absolute",
-                        top: "12px",
-                        right: "12px",
-                        backgroundColor: "#c5a059",
-                        color: "white",
-                        padding: "6px 12px",
-                        fontSize: "11px",
-                        fontWeight: "bold",
-                        fontFamily: "'Playfair Display', serif"
-                      }}>
-                        -{prod.descuento_porcentaje}%
-                      </div>
-                    )}
-                  </div>
-                  <h3 style={{
-                    fontSize: "12px",
-                    fontFamily: "'Playfair Display', serif",
-                    fontWeight: "600",
-                    margin: "0 0 6px 0",
-                    color: "#1a1a1a",
-                    letterSpacing: "0.5px"
-                  }}>
-                    {prod.nombre}
-                  </h3>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
-                    <span style={{
-                      fontSize: "15px",
-                      fontWeight: "700",
-                      color: "#1a1a1a"
+            
+            <style>{`
+              @media (max-width: 767px) {
+                .carousel-arrow {
+                  display: none !important;
+                }
+                .carousel-product {
+                  flex: 0 0 calc(33.333% - 14px) !important;
+                  min-width: 140px !important;
+                }
+              }
+            `}</style>
+            
+            {/* Contenedor del carrusel con flechas */}
+            <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "15px" }}>
+              {/* Flecha izquierda */}
+              <button
+                className="carousel-arrow"
+                onClick={() => {
+                  if (carouselRef.current) {
+                    carouselRef.current.scrollBy({ left: -300, behavior: "smooth" });
+                  }
+                }}
+                style={{
+                  position: "absolute",
+                  left: "-50px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: "40px",
+                  height: "40px",
+                  backgroundColor: "#1a1a1a",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "20px",
+                  transition: "all 0.3s ease",
+                  zIndex: 10
+                }}
+                onMouseOver={(e) => {
+                  (e.target as HTMLButtonElement).style.backgroundColor = "#333";
+                }}
+                onMouseOut={(e) => {
+                  (e.target as HTMLButtonElement).style.backgroundColor = "#1a1a1a";
+                }}
+              >
+                ←
+              </button>
+
+              {/* Carrusel */}
+              <div
+                ref={carouselRef}
+                style={{
+                  display: "flex",
+                  gap: "20px",
+                  overflowX: "auto",
+                  scrollBehavior: "smooth",
+                  scrollSnapType: "x mandatory",
+                  width: "100%",
+                  paddingBottom: "10px"
+                }}
+                className="carousel-container"
+              >
+                <style>{`
+                  .carousel-container::-webkit-scrollbar {
+                    height: 6px;
+                  }
+                  .carousel-container::-webkit-scrollbar-track {
+                    background: #f1f1f1;
+                  }
+                  .carousel-container::-webkit-scrollbar-thumb {
+                    background: #c5a059;
+                    border-radius: 3px;
+                  }
+                `}</style>
+                {productosRelacionados.map((prod) => (
+                  <div
+                    className="carousel-product"
+                    key={prod.id}
+                    onClick={() => navigate(`/producto/${prod.id}`)}
+                    style={{
+                      cursor: "pointer",
+                      transition: "transform 0.3s ease",
+                      flex: "0 0 calc(25% - 16px)",
+                      minWidth: "250px",
+                      scrollSnapAlign: "start"
+                    }}
+                    onMouseOver={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.transform = "translateY(-5px)";
+                    }}
+                    onMouseOut={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+                    }}
+                  >
+                    <div style={{
+                      position: "relative",
+                      aspectRatio: "3 / 5",
+                      backgroundColor: "#f5f5f5",
+                      overflow: "hidden",
+                      marginBottom: "12px"
                     }}>
-                      €{prod.precio_final.toFixed(2)}
-                    </span>
-                    {prod.es_rebaja && (
+                      <img
+                        src={prod.foto_url}
+                        alt={prod.nombre}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover"
+                        }}
+                      />
+                      {prod.es_rebaja && (
+                        <div style={{
+                          position: "absolute",
+                          top: "12px",
+                          right: "12px",
+                          backgroundColor: "#c5a059",
+                          color: "white",
+                          padding: "6px 12px",
+                          fontSize: "11px",
+                          fontWeight: "bold",
+                          fontFamily: "'Playfair Display', serif"
+                        }}>
+                          -{prod.descuento_porcentaje}%
+                        </div>
+                      )}
+                    </div>
+                    <h3 style={{
+                      fontSize: "12px",
+                      fontFamily: "'Playfair Display', serif",
+                      fontWeight: "600",
+                      margin: "0 0 6px 0",
+                      color: "#1a1a1a",
+                      letterSpacing: "0.5px"
+                    }}>
+                      {prod.nombre}
+                    </h3>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
                       <span style={{
-                        fontSize: "12px",
-                        textDecoration: "line-through",
-                        color: "#bbb"
+                        fontSize: "15px",
+                        fontWeight: "700",
+                        color: "#1a1a1a"
                       }}>
-                        €{prod.precio_original.toFixed(2)}
+                        €{prod.precio_final.toFixed(2)}
                       </span>
-                    )}
+                      {prod.es_rebaja && (
+                        <span style={{
+                          fontSize: "12px",
+                          textDecoration: "line-through",
+                          color: "#bbb"
+                        }}>
+                          €{prod.precio_original.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+
+              {/* Flecha derecha */}
+              <button
+                className="carousel-arrow"
+                onClick={() => {
+                  if (carouselRef.current) {
+                    carouselRef.current.scrollBy({ left: 300, behavior: "smooth" });
+                  }
+                }}
+                style={{
+                  position: "absolute",
+                  right: "-50px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: "40px",
+                  height: "40px",
+                  backgroundColor: "#1a1a1a",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "20px",
+                  transition: "all 0.3s ease",
+                  zIndex: 10
+                }}
+                onMouseOver={(e) => {
+                  (e.target as HTMLButtonElement).style.backgroundColor = "#333";
+                }}
+                onMouseOut={(e) => {
+                  (e.target as HTMLButtonElement).style.backgroundColor = "#1a1a1a";
+                }}
+              >
+                →
+              </button>
             </div>
           </div>
         )}

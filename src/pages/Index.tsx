@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import Footer from "@/components/Footer";
@@ -5,6 +6,7 @@ import rebajasImg from "@/assets/rebajas2.png";
 import novedadesImg from "@/assets/Novedades.png";
 
 const Index = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background home-text-shadow">
       <Navbar />
@@ -13,12 +15,22 @@ const Index = () => {
 
 
         <div className="banners-principales">
-          <a href="/rebajas.html" aria-label="Ver rebajas" className="banner-box rebajas">
+          <button
+            onClick={() => navigate('/vestidos?filtro=rebajas')}
+            aria-label="Ver rebajas"
+            className="banner-box rebajas"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+          >
             <img src={rebajasImg} alt="Rebajas" />
-          </a>
-          <a href="/novedades.html" aria-label="Ver novedades" className="banner-box novedades">
+          </button>
+          <button
+            onClick={() => navigate('/vestidos')}
+            aria-label="Ver novedades"
+            className="banner-box novedades"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+          >
             <img src={novedadesImg} alt="Novedades" />
-          </a>
+          </button>
         </div>
 
         <section className="trust-bar">

@@ -38,6 +38,8 @@ const Carrito = () => {
     localStorage.setItem('carrito', JSON.stringify(nuevoCarrito));
     setItems(nuevoCarrito);
     cargarCarrito();
+    // Notificar a otros componentes (Navbar) que el carrito cambió
+    window.dispatchEvent(new CustomEvent('carritoActualizado'));
   };
 
   const disminuirCantidad = (index: number) => {
@@ -86,30 +88,32 @@ const Carrito = () => {
       <div className="min-h-screen bg-background">
         <Navbar alwaysOpaque={true} />
         <main className="pt-28 pb-16">
-          <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 20px", textAlign: "center" }}>
+          <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "clamp(20px, 5vw, 40px) clamp(12px, 4vw, 20px)", textAlign: "center" }}>
             <h1 style={{
-              fontSize: "28px",
+              fontSize: "clamp(22px, 5vw, 28px)",
               fontFamily: "'Playfair Display', serif",
               color: "#1a1a1a",
-              marginBottom: "20px"
+              marginBottom: "clamp(15px, 4vw, 20px)"
             }}>
               TU CARRITO ESTÁ VACÍO
             </h1>
-            <p style={{ fontSize: "16px", color: "#666", marginBottom: "30px" }}>
+            <p style={{ fontSize: "clamp(13px, 3vw, 16px)", color: "#666", marginBottom: "clamp(20px, 5vw, 30px)" }}>
               Explore nuestra colección y encuentre el vestido perfecto para tu próximo evento.
             </p>
             <button
               onClick={() => navigate('/vestidos')}
               style={{
-                padding: "14px 40px",
+                padding: "clamp(12px, 3vw, 14px) clamp(25px, 6vw, 40px)",
                 backgroundColor: "#1a1a1a",
                 color: "white",
-                fontSize: "13px",
+                fontSize: "clamp(11px, 2.5vw, 13px)",
                 fontWeight: "bold",
                 border: "none",
                 cursor: "pointer",
                 fontFamily: "'Playfair Display', serif",
-                letterSpacing: "1px"
+                letterSpacing: "1px",
+                borderRadius: "2px",
+                transition: "all 0.3s ease"
               }}
               onMouseOver={(e) => {
                 (e.target as HTMLButtonElement).style.backgroundColor = "#333";
@@ -131,7 +135,7 @@ const Carrito = () => {
     <div className="min-h-screen bg-background">
       <Navbar alwaysOpaque={true} />
       <main className="pt-28 pb-16">
-        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 clamp(12px, 4vw, 20px)" }}>
           
           {/* Breadcrumb */}
           <button
@@ -141,9 +145,9 @@ const Carrito = () => {
               border: "none",
               color: "#999",
               cursor: "pointer",
-              fontSize: "13px",
+              fontSize: "clamp(11px, 2vw, 13px)",
               fontFamily: "'Playfair Display', serif",
-              marginBottom: "30px",
+              marginBottom: "clamp(20px, 4vw, 30px)",
               letterSpacing: "0.5px"
             }}
           >
@@ -151,28 +155,49 @@ const Carrito = () => {
           </button>
 
           <h1 style={{
-            fontSize: "28px",
+            fontSize: "clamp(24px, 6vw, 28px)",
             fontFamily: "'Playfair Display', serif",
             color: "#1a1a1a",
-            marginBottom: "40px",
+            marginBottom: "clamp(25px, 5vw, 40px)",
             letterSpacing: "1px"
           }}>
             TU CARRITO
           </h1>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 350px", gap: "40px" }}>
+          <div className="carrito-grid" style={{
+            display: "grid",
+            gridTemplateColumns: "1fr",
+            gap: "20px",
+            width: "100%"
+          }}>
+            <style>{`
+              @media (min-width: 768px) {
+                .carrito-grid {
+                  grid-template-columns: 1fr 350px !important;
+                  gap: 40px !important;
+                }
+                .carrito-resumen {
+                  position: sticky !important;
+                  top: 100px !important;
+                }
+              }
+            `}</style>
             
-            {/* Lista de productos */}
-            <div>
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px",
+              width: "100%"
+            }}>
               {items.map((item, index) => (
                 <div
                   key={index}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "120px 1fr",
-                    gap: "25px",
-                    paddingBottom: "25px",
-                    marginBottom: "25px",
+                    gridTemplateColumns: "clamp(80px, 25vw, 140px) 1fr",
+                    gap: "clamp(15px, 4vw, 25px)",
+                    paddingBottom: "20px",
+                    marginBottom: "20px",
                     borderBottom: "1px solid #e0e0e0",
                     alignItems: "start"
                   }}
@@ -182,7 +207,8 @@ const Carrito = () => {
                     aspectRatio: "3/4",
                     backgroundColor: "#f5f5f5",
                     overflow: "hidden",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    borderRadius: "2px"
                   }}
                   onClick={() => navigate(`/producto/${item.id}`)}
                   >
@@ -198,27 +224,28 @@ const Carrito = () => {
                   </div>
 
                   {/* Detalles */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "clamp(10px, 3vw, 15px)" }}>
                     <div>
                       <h3 style={{
-                        fontSize: "14px",
+                        fontSize: "clamp(12px, 3vw, 14px)",
                         fontFamily: "'Playfair Display', serif",
                         fontWeight: "600",
-                        margin: "0 0 8px 0",
+                        margin: "0 0 6px 0",
                         color: "#1a1a1a",
-                        letterSpacing: "0.5px"
+                        letterSpacing: "0.5px",
+                        lineHeight: "1.3"
                       }}>
                         {item.nombre}
                       </h3>
                       <p style={{
-                        fontSize: "12px",
+                        fontSize: "clamp(10px, 2vw, 12px)",
                         color: "#999",
-                        margin: "0 0 4px 0"
+                        margin: "0 0 3px 0"
                       }}>
                         <strong>Talla:</strong> {item.talla}
                       </p>
                       <p style={{
-                        fontSize: "12px",
+                        fontSize: "clamp(10px, 2vw, 12px)",
                         color: "#999",
                         margin: 0
                       }}>
@@ -226,74 +253,78 @@ const Carrito = () => {
                       </p>
                     </div>
 
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        border: "1px solid #ddd",
-                        borderRadius: "2px"
-                      }}>
-                        <button
-                          onClick={() => disminuirCantidad(index)}
-                          style={{
-                            width: "32px",
-                            height: "32px",
-                            border: "none",
-                            background: "none",
-                            cursor: "pointer",
-                            fontSize: "14px",
-                            fontWeight: "bold"
-                          }}
-                        >
-                          −
-                        </button>
-                        <span style={{
-                          minWidth: "30px",
-                          textAlign: "center",
-                          fontSize: "13px",
-                          fontWeight: "600"
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+                        <div style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          border: "1px solid #ddd",
+                          borderRadius: "2px",
+                          padding: "2px"
                         }}>
-                          {item.cantidad}
+                          <button
+                            onClick={() => disminuirCantidad(index)}
+                            style={{
+                              width: "clamp(28px, 7vw, 36px)",
+                              height: "clamp(28px, 7vw, 36px)",
+                              border: "none",
+                              background: "none",
+                              cursor: "pointer",
+                              fontSize: "clamp(12px, 3vw, 16px)",
+                              fontWeight: "bold"
+                            }}
+                          >
+                            −
+                          </button>
+                          <span style={{
+                            minWidth: "25px",
+                            textAlign: "center",
+                            fontSize: "clamp(11px, 2vw, 13px)",
+                            fontWeight: "600"
+                          }}>
+                            {item.cantidad}
+                          </span>
+                          <button
+                            onClick={() => aumentarCantidad(index)}
+                            style={{
+                              width: "clamp(28px, 7vw, 36px)",
+                              height: "clamp(28px, 7vw, 36px)",
+                              border: "none",
+                              background: "none",
+                              cursor: "pointer",
+                              fontSize: "clamp(12px, 3vw, 16px)",
+                              fontWeight: "bold"
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <span style={{
+                          fontSize: "clamp(13px, 3vw, 15px)",
+                          fontWeight: "700",
+                          color: "#1a1a1a"
+                        }}>
+                          €{(item.precio_final * item.cantidad).toFixed(2)}
                         </span>
+
                         <button
-                          onClick={() => aumentarCantidad(index)}
+                          onClick={() => eliminarItem(index)}
                           style={{
-                            width: "32px",
-                            height: "32px",
-                            border: "none",
                             background: "none",
+                            border: "none",
+                            color: "#c5413b",
                             cursor: "pointer",
-                            fontSize: "14px",
-                            fontWeight: "bold"
+                            fontSize: "clamp(10px, 2vw, 12px)",
+                            fontWeight: "600",
+                            fontFamily: "'Playfair Display', serif",
+                            padding: "4px 8px"
                           }}
                         >
-                          +
+                          ELIMINAR
                         </button>
                       </div>
-
-                      <span style={{
-                        fontSize: "15px",
-                        fontWeight: "700",
-                        color: "#1a1a1a"
-                      }}>
-                        €{(item.precio_final * item.cantidad).toFixed(2)}
-                      </span>
-
-                      <button
-                        onClick={() => eliminarItem(index)}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "#c5413b",
-                          cursor: "pointer",
-                          fontSize: "13px",
-                          fontWeight: "600",
-                          fontFamily: "'Playfair Display', serif"
-                        }}
-                      >
-                        ELIMINAR
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -301,21 +332,20 @@ const Carrito = () => {
             </div>
 
             {/* Resumen y botones */}
-            <div style={{
-              position: "sticky",
-              top: "100px",
+            <div className="carrito-resumen" style={{
+              position: "relative",
               height: "fit-content",
               backgroundColor: "white",
-              padding: "30px",
+              padding: "clamp(20px, 5vw, 30px)",
               border: "1px solid #e0e0e0",
               borderRadius: "2px"
             }}>
               <h2 style={{
-                fontSize: "14px",
+                fontSize: "clamp(12px, 3vw, 14px)",
                 fontFamily: "'Playfair Display', serif",
                 fontWeight: "700",
                 letterSpacing: "1.5px",
-                marginBottom: "25px",
+                marginBottom: "clamp(15px, 4vw, 25px)",
                 color: "#1a1a1a"
               }}>
                 RESUMEN
@@ -324,8 +354,8 @@ const Carrito = () => {
               <div style={{
                 display: "flex",
                 justifyContent: "space-between",
-                marginBottom: "12px",
-                fontSize: "13px",
+                marginBottom: "10px",
+                fontSize: "clamp(11px, 2.5vw, 13px)",
                 color: "#666"
               }}>
                 <span>Subtotal:</span>
@@ -335,21 +365,21 @@ const Carrito = () => {
               <div style={{
                 display: "flex",
                 justifyContent: "space-between",
-                marginBottom: "12px",
-                fontSize: "13px",
+                marginBottom: "10px",
+                fontSize: "clamp(10px, 2vw, 12px)",
                 color: "#666"
               }}>
                 <span>Envío:</span>
-                <span>A consultar</span>
+                <span style={{ fontSize: "clamp(10px, 2vw, 11px)", fontStyle: "italic", color: "#999" }}>Se calculará en el siguiente paso</span>
               </div>
 
               <div style={{
                 borderTop: "1px solid #e0e0e0",
-                paddingTop: "15px",
-                marginBottom: "25px",
+                paddingTop: "12px",
+                marginBottom: "clamp(15px, 4vw, 25px)",
                 display: "flex",
                 justifyContent: "space-between",
-                fontSize: "16px",
+                fontSize: "clamp(14px, 3vw, 16px)",
                 fontWeight: "700",
                 color: "#1a1a1a"
               }}>
@@ -358,20 +388,21 @@ const Carrito = () => {
               </div>
 
               <button
-                onClick={procederCompra}
+                onClick={() => navigate('/checkout')}
                 style={{
                   width: "100%",
-                  padding: "15px",
+                  padding: "clamp(12px, 3vw, 15px)",
                   backgroundColor: "#1a1a1a",
                   color: "white",
-                  fontSize: "12px",
+                  fontSize: "clamp(11px, 2.5vw, 12px)",
                   fontWeight: "700",
                   border: "none",
                   cursor: "pointer",
                   fontFamily: "'Playfair Display', serif",
                   letterSpacing: "1.5px",
-                  marginBottom: "10px",
-                  transition: "all 0.3s ease"
+                  marginBottom: "8px",
+                  transition: "all 0.3s ease",
+                  borderRadius: "2px"
                 }}
                 onMouseOver={(e) => {
                   (e.target as HTMLButtonElement).style.backgroundColor = "#333";
@@ -380,24 +411,25 @@ const Carrito = () => {
                   (e.target as HTMLButtonElement).style.backgroundColor = "#1a1a1a";
                 }}
               >
-                PROCEDER VÍA WHATSAPP
+                FINALIZAR COMPRA
               </button>
 
               <button
                 onClick={() => navigate('/vestidos')}
                 style={{
                   width: "100%",
-                  padding: "15px",
+                  padding: "clamp(12px, 3vw, 15px)",
                   backgroundColor: "white",
                   color: "#1a1a1a",
-                  fontSize: "12px",
+                  fontSize: "clamp(11px, 2.5vw, 12px)",
                   fontWeight: "700",
                   border: "1.5px solid #1a1a1a",
                   cursor: "pointer",
                   fontFamily: "'Playfair Display', serif",
                   letterSpacing: "1.5px",
-                  marginBottom: "10px",
-                  transition: "all 0.3s ease"
+                  marginBottom: "8px",
+                  transition: "all 0.3s ease",
+                  borderRadius: "2px"
                 }}
                 onMouseOver={(e) => {
                   (e.target as HTMLButtonElement).style.backgroundColor = "#fcfaf7";
@@ -413,16 +445,17 @@ const Carrito = () => {
                 onClick={vaciarCarrito}
                 style={{
                   width: "100%",
-                  padding: "12px",
+                  padding: "clamp(10px, 2.5vw, 12px)",
                   backgroundColor: "transparent",
                   color: "#c5413b",
-                  fontSize: "11px",
+                  fontSize: "clamp(10px, 2vw, 11px)",
                   fontWeight: "600",
                   border: "1px solid #f0e0e0",
                   cursor: "pointer",
                   fontFamily: "'Playfair Display', serif",
                   letterSpacing: "1px",
-                  transition: "all 0.3s ease"
+                  transition: "all 0.3s ease",
+                  borderRadius: "2px"
                 }}
                 onMouseOver={(e) => {
                   (e.target as HTMLButtonElement).style.backgroundColor = "#fff0f0";
@@ -433,6 +466,17 @@ const Carrito = () => {
               >
                 VACIAR CARRITO
               </button>
+
+              <p style={{
+                fontSize: "clamp(9px, 2vw, 10px)",
+                color: "#999",
+                marginTop: "clamp(12px, 3vw, 20px)",
+                textAlign: "center",
+                lineHeight: "1.5",
+                fontStyle: "italic"
+              }}>
+                * El precio final incluye impuestos. Los gastos de envío se añaden al introducir la dirección de entrega.
+              </p>
             </div>
           </div>
         </div>

@@ -26,7 +26,9 @@ const Navbar = ({ alwaysOpaque = false }) => {
   useEffect(() => {
     const actualizarCarrito = () => {
       const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-      setCarritoCount(carrito.length);
+      // Sumar la propiedad `cantidad` de cada elemento (por si existen múltiples unidades del mismo vestido)
+      const total = carrito.reduce((acc: number, item: any) => acc + (item.cantidad || 0), 0);
+      setCarritoCount(total);
     };
 
     actualizarCarrito();
@@ -121,14 +123,53 @@ const Navbar = ({ alwaysOpaque = false }) => {
           </a>
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          onClick={() => setOpen(!open)}
-          className={`md:hidden p-2 ${alwaysOpaque || scrolled ? "text-foreground" : "text-primary-foreground"}`}
-          aria-label="Menú"
-        >
-          {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        {/* Mobile: carrito + hamburguesa */}
+        <div className="md:hidden flex items-center gap-4">
+          <button
+            onClick={() => navigate('/carrito')}
+            style={{
+              position: "relative",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center"
+            }}
+          >
+            <ShoppingBag 
+              className={alwaysOpaque || scrolled ? "text-foreground" : "text-primary-foreground"}
+              size={20}
+            />
+            {carritoCount > 0 && (
+              <span style={{
+                position: "absolute",
+                top: "-8px",
+                right: "-10px",
+                backgroundColor: "#1a1a1a",
+                color: "white",
+                borderRadius: "50%",
+                width: "18px",
+                height: "18px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "10px",
+                fontWeight: "bold",
+                fontFamily: "system-ui"
+              }}>
+                {carritoCount > 99 ? '99+' : carritoCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setOpen(!open)}
+            className={`p-2 ${alwaysOpaque || scrolled ? "text-foreground" : "text-primary-foreground"}`}
+            aria-label="Menú"
+          >
+            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
